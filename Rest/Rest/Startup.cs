@@ -26,7 +26,10 @@ namespace Rest
             services.AddControllers();
 
             var connection = Configuration["MySQLConnection:MySQLConnectionString"];
-            services.AddDbContext<MySQLContext>(options => options.UseMySql(connection));
+            services.AddDbContext<MySQLContext>(options => options.UseMySql(connection, ServerVersion.AutoDetect(connection)));
+
+
+            services.AddApiVersioning();
 
             services.AddScoped<IPersonService, PersonServiceImplementation>();
         }
@@ -50,5 +53,9 @@ namespace Rest
                 endpoints.MapControllers();
             });
         }
+    }
+
+    internal class ApplicationDbContext
+    {
     }
 }

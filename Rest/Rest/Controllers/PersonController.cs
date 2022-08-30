@@ -2,13 +2,12 @@
 using Microsoft.Extensions.Logging;
 using Rest.Model;
 using Rest.Services;
-using System;
-using System.Globalization;
 
 namespace Rest.Controllers
 {
+    [ApiVersion("1")]
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/[controller]/v{version:apiVersion}")]
     public class PersonController : ControllerBase
     {
 
