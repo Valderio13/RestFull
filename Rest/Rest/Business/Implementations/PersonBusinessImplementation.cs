@@ -20,7 +20,6 @@ namespace Rest.Business.Implemetations
         {
             return _converter.Parse(_repository.FindAll());
         }
-
         public PersonVO FindByID(long id)
         {
             return _converter.Parse(_repository.FindByID(id));
