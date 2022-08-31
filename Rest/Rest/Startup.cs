@@ -8,10 +8,10 @@ using Rest.Business;
 using Rest.Business.Implemetations;
 using Rest.Model.Context;
 using Rest.Repository;
-using Rest.Repository.Implemetations;
 using Serilog;
 using System;
 using System.Collections.Generic;
+using Rest.Repository.Generic;
 
 namespace Rest
 {
@@ -45,7 +45,9 @@ namespace Rest
             services.AddApiVersioning();
 
             services.AddScoped<IPersonBusiness, PersonBusinessImplementation>();
-            services.AddScoped<IPersonRepository, PersonRepositoryImplementation>();
+            services.AddScoped<IBookBusiness, BookBusinessImplementation>();
+
+            services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
         }       
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
