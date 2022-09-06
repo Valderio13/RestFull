@@ -17,6 +17,14 @@ using RestWithASPNETUdemy.Hypermedia.Filters;
 using RestWithASPNETUdemy.Hypermedia.Enricher;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Rewrite;
+using RestWithASPNETUdemy.Services.Implementations;
+using RestWithASPNETUdemy.Services;
+using RestWithASPNETUdemy.Configurations;
+using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.AspNetCore.Authorization;
 
 namespace RestWithASPNETUdemy
 {
@@ -37,6 +45,48 @@ namespace RestWithASPNETUdemy
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var tokenConfigurantions = new TokenConfigurations();
+
+            new ConfigureFromConfigurationOptions<TokenConfigurations>(
+                    Configuration.GetSection("TokenConfigurations")
+                )
+                .Configure(tokenConfigurantions);
+
+            services.AddSingleton(tokenConfigurantions);
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
+            })
+            .AddJwtBearer(options =>
+           {
+               options.TokenValidationParameters = new TokenValidationParameters
+               {
+                   ValidateIssuer = true,
+                   ValidateAudience = true,
+                   ValidateLifetime = true,
+                   ValidateIssuerSigningKey = true,
+                   ValidIssuer = tokenConfigurantions.Issuer,
+                   ValidAudience = tokenConfigurantions.Audience,
+                   IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenConfigurantions.Secret))
+               };
+           });
+
+            services.AddAuthorization(auth =>
+           {
+               auth.AddPolicy("Bearer", new AuthorizationPolicyBuilder()
+                   .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme)
+                   .RequireAuthenticatedUser().Build());
+           });
+
+            services.AddCors(options => options.AddDefaultPolicy(builder =>
+            {
+                builder.AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader();
+            }));
 
             services.AddControllers();
 
@@ -70,13 +120,13 @@ namespace RestWithASPNETUdemy
                 c.SwaggerDoc("v1",
                     new OpenApiInfo
                     {
-                        Title = "REST API's From 0 to Azure with ASP.NET Core 5 and Docker",
+                        Title = "REST API's",
                         Version = "v1",
                         Description = "API RESTful developed in course 'REST API's From 0 to Azure with ASP.NET Core 5 and Docker'",
                         Contact = new OpenApiContact
                         {
-                            Name = "Leandro Costa",
-                            Url = new Uri("https://github.com/leandrocgsi")
+                            Name = "Valderio Junior",
+                            Url = new Uri("https://github.com/Valderio13")
                         }
                     });
             });
@@ -84,6 +134,11 @@ namespace RestWithASPNETUdemy
             //Dependency Injection
             services.AddScoped<IPersonBusiness, PersonBusinessImplementation>();
             services.AddScoped<IBookBusiness, BookBusinessImplementation>();
+            services.AddScoped<ILoginBusiness, LoginBusinessImplementation>();
+
+            services.AddTransient<ITokenService, TokenService>();
+
+            services.AddScoped<IUserRepository, UserRepository>();
 
             services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
         }
@@ -100,6 +155,8 @@ namespace RestWithASPNETUdemy
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseCors();
 
             app.UseSwagger();
 

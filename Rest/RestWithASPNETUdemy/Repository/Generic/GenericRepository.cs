@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using RestWithASPNETUdemy.Model;
 using RestWithASPNETUdemy.Model.Base;
 using RestWithASPNETUdemy.Model.Context;
 using System;
@@ -63,7 +64,7 @@ namespace RestWithASPNETUdemy.Repository.Generic
                 return null;
             }
         }
-
+        
         public void Delete(long id)
         {
             var result = dataset.SingleOrDefault(p => p.Id.Equals(id));
