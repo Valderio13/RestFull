@@ -1,0 +1,1 @@
+for i in `find /home/database/ -name "*.sql" | sort --version-sort`; do mysql -uValderio -pJr_2389NetoAni13 rest < $i; done;
